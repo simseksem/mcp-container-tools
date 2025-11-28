@@ -4,23 +4,25 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
 
-A Model Context Protocol (MCP) server for reading and managing Docker, Docker Compose, and Kubernetes logs with advanced filtering capabilities.
+A Model Context Protocol (MCP) server for Docker, Kubernetes, and Azure Application Insights with advanced log filtering and monitoring capabilities.
 
 ## ✨ Features
 
 - 🐳 **Docker** — Container logs, inspect, exec, list containers
 - 🐙 **Docker Compose** — Service logs, start/stop/restart services
 - ☸️ **Kubernetes** — Pod logs, deployment logs, events, exec into pods
+- ☁️ **Azure Application Insights** — Exceptions, traces, requests, metrics
 - 🔍 **Log Filtering** — Filter by log level, regex patterns, exclude patterns
 - 🌐 **Remote Support** — Connect to remote Docker hosts via SSH or TCP
 
 ## 📋 Requirements
 
-| Requirement | Version |
-|-------------|---------|
-| 🐍 Python | 3.11+ |
-| 🐳 Docker | Latest |
-| ☸️ kubectl | Latest |
+| Requirement | Version | Required For |
+|-------------|---------|--------------|
+| 🐍 Python | 3.11+ | All |
+| 🐳 Docker | Latest | Docker tools |
+| ☸️ kubectl | Latest | Kubernetes tools |
+| ☁️ Azure CLI | Latest | Azure tools (optional) |
 
 ## 🚀 Installation
 
@@ -43,7 +45,14 @@ source .venv/bin/activate  # Linux/macOS
 ### 3️⃣ Install the package
 
 ```bash
+# Basic installation (Docker, K8s)
 pip install -e .
+
+# With Azure Application Insights support
+pip install -e ".[azure]"
+
+# Full installation (all features + dev tools)
+pip install -e ".[all]"
 ```
 
 ### 4️⃣ Verify installation
@@ -65,7 +74,11 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   "mcpServers": {
     "container-tools": {
       "command": "/path/to/mcp-container-tools/.venv/bin/python",
-      "args": ["-m", "mcp_server.server"]
+      "args": ["-m", "mcp_server.server"],
+      "env": {
+        "AZURE_LOG_ANALYTICS_WORKSPACE_ID": "your-workspace-id",
+        "AZURE_APP_INSIGHTS_RESOURCE_ID": "/subscriptions/.../resourceGroups/.../providers/microsoft.insights/components/..."
+      }
     }
   }
 }
@@ -84,6 +97,19 @@ Add to `~/.claude/settings.json` or create `.mcp.json` in your project:
     }
   }
 }
+```
+
+### ☁️ Azure Authentication
+
+Azure tools use `DefaultAzureCredential` which supports:
+- Azure CLI (`az login`)
+- Environment variables
+- Managed Identity
+- Visual Studio Code
+
+```bash
+# Easiest: Login with Azure CLI
+az login
 ```
 
 ## 📖 Usage Examples
@@ -153,6 +179,42 @@ k8s_events(namespace="production")
 k8s_exec(pod="api-xyz", command="printenv", namespace="production")
 ```
 
+### ☁️ Azure Application Insights
+
+```python
+# Query exceptions from last hour
+azure_exceptions(timespan="PT1H", limit=50)
+
+# Get only critical exceptions
+azure_exceptions(severity="critical", search="NullReference")
+
+# Query application traces
+azure_traces(timespan="PT1H", severity="error")
+
+# Query HTTP requests
+azure_requests(timespan="PT1H", failed_only=True)
+
+# Get slow requests (>1 second)
+azure_requests(min_duration_ms=1000, limit=20)
+
+# Query external dependencies (SQL, HTTP, etc.)
+azure_dependencies(timespan="PT1H", failed_only=True, type_filter="SQL")
+
+# Get metrics
+azure_metrics(metric_name="requests/count", timespan="P1D", interval="PT1H")
+
+# Query availability test results
+azure_availability(timespan="P1D", failed_only=True)
+
+# Run custom Kusto query
+azure_query(query="""
+    requests
+    | where success == false
+    | summarize count() by bin(timestamp, 1h), resultCode
+    | order by timestamp desc
+""", timespan="P1D")
+```
+
 ### 🔍 Log Filtering Options
 
 All log tools support these filtering options:
@@ -165,6 +227,17 @@ All log tools support these filtering options:
 | `context_lines` | Lines around matches | `5` |
 
 **Supported log levels:** `trace` → `debug` → `info` → `warn` → `error` → `fatal`
+
+### ⏱️ Timespan Format (Azure)
+
+Azure tools use ISO 8601 duration format:
+
+| Format | Duration |
+|--------|----------|
+| `PT1H` | 1 hour |
+| `PT30M` | 30 minutes |
+| `P1D` | 1 day |
+| `P7D` | 7 days |
 
 ## 🛠️ Available Tools
 
@@ -196,12 +269,23 @@ All log tools support these filtering options:
 | `k8s_events` | 📢 Get events |
 | `k8s_contexts` | 🌐 List contexts |
 
+### ☁️ Azure Application Insights Tools
+| Tool | Description |
+|------|-------------|
+| `azure_query` | 🔍 Run custom Kusto queries |
+| `azure_exceptions` | ❌ Query application exceptions |
+| `azure_traces` | 📝 Query application traces |
+| `azure_requests` | 🌐 Query HTTP requests |
+| `azure_dependencies` | 🔗 Query external dependencies |
+| `azure_metrics` | 📊 Query metrics |
+| `azure_availability` | ✅ Query availability tests |
+
 ## 👨‍💻 Development
 
 ### Install dev dependencies
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[all]"
 ```
 
 ### Run tests
@@ -223,24 +307,32 @@ mypy src/
 mcp-container-tools/
 ├── 📂 src/mcp_server/
 │   ├── 📄 __init__.py
-│   ├── 📄 server.py              # Main server entry point
+│   ├── 📄 server.py               # Main server entry point
 │   ├── 📂 tools/
-│   │   ├── 🐳 docker.py          # Docker tools
-│   │   ├── 🐙 docker_compose.py  # Compose tools
-│   │   ├── ☸️ kubernetes.py       # K8s tools
-│   │   ├── 🧮 calculator.py      # Example tool
-│   │   └── 📁 file_operations.py # File tools
+│   │   ├── 🐳 docker.py           # Docker tools
+│   │   ├── 🐙 docker_compose.py   # Compose tools
+│   │   ├── ☸️ kubernetes.py        # K8s tools
+│   │   ├── ☁️ azure_insights.py    # Azure App Insights
+│   │   ├── 🧮 calculator.py       # Example tool
+│   │   └── 📁 file_operations.py  # File tools
 │   ├── 📂 resources/
-│   │   ├── ⚙️ config.py          # Config resources
-│   │   └── 📊 data.py            # Data resources
+│   │   ├── ⚙️ config.py           # Config resources
+│   │   └── 📊 data.py             # Data resources
 │   ├── 📂 prompts/
-│   │   └── 📝 templates.py       # Prompt templates
+│   │   └── 📝 templates.py        # Prompt templates
 │   └── 📂 utils/
-│       └── 🔍 log_filter.py      # Log filtering
+│       └── 🔍 log_filter.py       # Log filtering
 ├── 📂 tests/
 ├── 📄 pyproject.toml
 └── 📄 README.md
 ```
+
+## 🔐 Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `AZURE_LOG_ANALYTICS_WORKSPACE_ID` | Azure Log Analytics workspace ID |
+| `AZURE_APP_INSIGHTS_RESOURCE_ID` | Azure Application Insights resource ID |
 
 ## 📄 License
 

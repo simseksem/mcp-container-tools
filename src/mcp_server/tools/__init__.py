@@ -2,6 +2,7 @@
 
 from mcp.server import Server
 
+from mcp_server.tools.azure_insights import register_azure_insights_tools
 from mcp_server.tools.calculator import register_calculator_tools
 from mcp_server.tools.docker import register_docker_tools
 from mcp_server.tools.docker_compose import register_compose_tools
@@ -16,3 +17,4 @@ def register_tools(server: Server) -> None:
     register_docker_tools(server)
     register_compose_tools(server)
     register_kubernetes_tools(server)
+    register_azure_insights_tools(server)
