@@ -1,98 +1,137 @@
 #!/usr/bin/env python3
-"""Test MCP server by sending JSON-RPC requests."""
+"""Test MCP server tools directly."""
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from mcp_server import create_server
 
-
-async def test_tool(server, tool_name: str, arguments: dict) -> None:
-    """Test a specific tool."""
-    print(f"\n🔧 Testing: {tool_name}")
-    print(f"   Args: {json.dumps(arguments)}")
-    print("-" * 50)
-
-    try:
-        # Get the call_tool handler
-        handlers = server._tool_handlers
-        if handlers:
-            for handler in handlers:
-                result = await handler(tool_name, arguments)
-                for content in result:
-                    text = content.text if hasattr(content, 'text') else str(content)
-                    # Truncate long output
-                    if len(text) > 300:
-                        text = text[:300] + "..."
-                    print(text)
-        print("✅ Success")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
-
-async def test_list_tools(server) -> list:
-    """List all available tools."""
-    print("\n📋 Available Tools:")
+async def test_calculator():
+    """Test calculator tool."""
+    print("\n🧮 Calculator Test")
     print("=" * 50)
 
-    tools = []
-    handlers = server._list_tools_handlers
-    if handlers:
-        for handler in handlers:
-            result = await handler()
-            tools.extend(result)
+    from mcp_server.tools.calculator import CalculateInput, _perform_calculation
 
-    for tool in tools:
-        print(f"  • {tool.name}: {tool.description}")
+    tests = [
+        ("7 × 8", "multiply", 7, 8),
+        ("100 ÷ 4", "divide", 100, 4),
+        ("15 + 27", "add", 15, 27),
+        ("50 - 18", "subtract", 50, 18),
+    ]
 
-    return tools
+    for name, op, a, b in tests:
+        result = _perform_calculation(CalculateInput(operation=op, a=a, b=b))
+        print(f"  {name} = {result}")
+
+    print("✅ Calculator works!")
+
+
+async def test_docker():
+    """Test Docker tools."""
+    print("\n🐳 Docker Test")
+    print("=" * 50)
+
+    from mcp_server.tools.docker import ListContainersInput, _list_containers
+
+    try:
+        result = await _list_containers(ListContainersInput(all=True), None)
+        print(result[:500] if len(result) > 500 else result)
+        print("✅ Docker works!")
+    except Exception as e:
+        print(f"❌ {e}")
+
+
+async def test_kubernetes():
+    """Test Kubernetes tools."""
+    print("\n☸️ Kubernetes Test")
+    print("=" * 50)
+
+    from mcp_server.tools.kubernetes import ListPodsInput, _list_pods
+
+    try:
+        result = await _list_pods(ListPodsInput(namespace="default"))
+        print(result[:500] if len(result) > 500 else result)
+        print("✅ Kubernetes works!")
+    except Exception as e:
+        print(f"❌ {e}")
+
+
+async def test_azure():
+    """Test Azure tools."""
+    print("\n☁️ Azure Application Insights Test")
+    print("=" * 50)
+
+    try:
+        from mcp_server.tools.azure_insights import AZURE_SDK_AVAILABLE
+
+        if not AZURE_SDK_AVAILABLE:
+            print("⚠️  Azure SDK not installed")
+            print("   Run: pip install -e '.[azure]'")
+            return
+
+        import os
+        if not os.getenv("AZURE_LOG_ANALYTICS_WORKSPACE_ID"):
+            print("⚠️  AZURE_LOG_ANALYTICS_WORKSPACE_ID not set")
+            return
+
+        from mcp_server.tools.azure_insights import (
+            ExceptionsQueryInput, _query_exceptions
+        )
+
+        result = await _query_exceptions(
+            ExceptionsQueryInput(timespan="PT1H", limit=5)
+        )
+        print(result[:500] if len(result) > 500 else result)
+        print("✅ Azure works!")
+    except Exception as e:
+        print(f"❌ {e}")
+
+
+async def test_log_filter():
+    """Test log filtering."""
+    print("\n🔍 Log Filter Test")
+    print("=" * 50)
+
+    from mcp_server.utils.log_filter import filter_logs
+
+    logs = """2024-01-15 10:00:00 INFO Application started
+2024-01-15 10:00:01 DEBUG Loading config
+2024-01-15 10:00:02 ERROR Database connection failed
+2024-01-15 10:00:03 WARN Retrying connection
+2024-01-15 10:00:04 ERROR Timeout exceeded
+2024-01-15 10:00:05 INFO Connection restored"""
+
+    print("Original logs:")
+    print(logs)
+    print("\nFiltered (min_level='error'):")
+    print(filter_logs(logs, min_level="error"))
+    print("✅ Log filter works!")
 
 
 async def main():
-    """Main test function."""
     print("\n" + "=" * 60)
-    print("  🧪 MCP Server Direct Test")
+    print("  🧪 MCP Container Tools - Quick Test")
     print("=" * 60)
 
-    # Create server
-    server = create_server()
-    print(f"\n✅ Server created: {server.name}")
+    await test_calculator()
+    await test_log_filter()
 
-    # List tools
-    tools = await test_list_tools(server)
-
-    # Test calculator
-    await test_tool(server, "calculate", {
-        "operation": "multiply",
-        "a": 7,
-        "b": 8
-    })
-
-    # Test Docker (if available)
+    # Optional tests
     print("\n" + "-" * 60)
-    response = input("Test docker_ps? [y/N]: ").strip().lower()
-    if response == 'y':
-        await test_tool(server, "docker_ps", {"all": False})
+    if input("Test Docker? [y/N]: ").lower() == 'y':
+        await test_docker()
 
-    # Test Kubernetes (if available)
-    response = input("Test k8s_pods? [y/N]: ").strip().lower()
-    if response == 'y':
-        await test_tool(server, "k8s_pods", {"namespace": "default"})
+    if input("Test Kubernetes? [y/N]: ").lower() == 'y':
+        await test_kubernetes()
 
-    # Test Azure (if available)
-    response = input("Test azure_exceptions? [y/N]: ").strip().lower()
-    if response == 'y':
-        await test_tool(server, "azure_exceptions", {
-            "timespan": "PT1H",
-            "limit": 5
-        })
+    if input("Test Azure? [y/N]: ").lower() == 'y':
+        await test_azure()
 
     print("\n" + "=" * 60)
-    print("  ✅ MCP Server test completed!")
+    print("  ✅ Tests completed!")
     print("=" * 60 + "\n")
 
 
