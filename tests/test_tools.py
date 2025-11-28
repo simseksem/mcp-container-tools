@@ -2,33 +2,33 @@
 
 import pytest
 
-from mcp_server.tools.calculator import CalculateInput, _perform_calculation
+from mcp_server.utils.log_filter import filter_logs, LogLevel
 
 
-class TestCalculator:
-    """Tests for calculator tool."""
+class TestLogFilter:
+    """Tests for log filtering."""
 
-    def test_add(self):
-        input_data = CalculateInput(operation="add", a=2, b=3)
-        assert _perform_calculation(input_data) == 5
+    def test_filter_by_level_error(self):
+        logs = "INFO ok\nERROR fail\nWARN warning"
+        result = filter_logs(logs, min_level="error")
+        assert "ERROR fail" in result
+        assert "INFO ok" not in result
 
-    def test_subtract(self):
-        input_data = CalculateInput(operation="subtract", a=10, b=4)
-        assert _perform_calculation(input_data) == 6
+    def test_filter_by_pattern(self):
+        logs = "INFO starting\nERROR database failed\nINFO done"
+        result = filter_logs(logs, pattern="database")
+        assert "database" in result
+        assert "starting" not in result
 
-    def test_multiply(self):
-        input_data = CalculateInput(operation="multiply", a=3, b=4)
-        assert _perform_calculation(input_data) == 12
+    def test_filter_exclude_pattern(self):
+        logs = "INFO health check\nERROR real error\nINFO health check"
+        result = filter_logs(logs, exclude_pattern="health")
+        assert "real error" in result
+        assert "health" not in result
 
-    def test_divide(self):
-        input_data = CalculateInput(operation="divide", a=10, b=2)
-        assert _perform_calculation(input_data) == 5
-
-    def test_divide_by_zero(self):
-        input_data = CalculateInput(operation="divide", a=10, b=0)
-        assert _perform_calculation(input_data) == float("inf")
-
-    def test_unknown_operation(self):
-        input_data = CalculateInput(operation="power", a=2, b=3)
-        with pytest.raises(ValueError, match="Unknown operation"):
-            _perform_calculation(input_data)
+    def test_filter_combined(self):
+        logs = "DEBUG test\nERROR db failed\nERROR health check failed"
+        result = filter_logs(logs, min_level="error", exclude_pattern="health")
+        assert "db failed" in result
+        assert "health" not in result
+        assert "DEBUG" not in result

@@ -313,7 +313,6 @@ mcp-container-tools/
 │   │   ├── 🐙 docker_compose.py   # Compose tools
 │   │   ├── ☸️ kubernetes.py        # K8s tools
 │   │   ├── ☁️ azure_insights.py    # Azure App Insights
-│   │   ├── 🧮 calculator.py       # Example tool
 │   │   └── 📁 file_operations.py  # File tools
 │   ├── 📂 resources/
 │   │   ├── ⚙️ config.py           # Config resources

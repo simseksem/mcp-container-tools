@@ -8,27 +8,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
-async def test_calculator():
-    """Test calculator tool."""
-    print("\n🧮 Calculator Test")
-    print("=" * 50)
-
-    from mcp_server.tools.calculator import CalculateInput, _perform_calculation
-
-    tests = [
-        ("7 × 8", "multiply", 7, 8),
-        ("100 ÷ 4", "divide", 100, 4),
-        ("15 + 27", "add", 15, 27),
-        ("50 - 18", "subtract", 50, 18),
-    ]
-
-    for name, op, a, b in tests:
-        result = _perform_calculation(CalculateInput(operation=op, a=a, b=b))
-        print(f"  {name} = {result}")
-
-    print("✅ Calculator works!")
-
-
 async def test_docker():
     """Test Docker tools."""
     print("\n🐳 Docker Test")
@@ -116,7 +95,6 @@ async def main():
     print("  🧪 MCP Container Tools - Quick Test")
     print("=" * 60)
 
-    await test_calculator()
     await test_log_filter()
 
     # Optional tests
