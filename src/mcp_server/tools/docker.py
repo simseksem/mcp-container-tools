@@ -4,20 +4,20 @@ import asyncio
 from typing import Any, Literal
 
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel, Field
 
-from mcp_server.utils.log_filter import filter_logs, LogLevel
+from mcp_server.utils.log_filter import filter_logs
 
 
 class LogFilterInput(BaseModel):
     """Input schema for log filtering options."""
 
     min_level: Literal["trace", "debug", "info", "warn", "error", "fatal"] | None = Field(
-        default=None, description="Minimum log level to show (trace, debug, info, warn, error, fatal)"
+        default=None, description="Minimum log level to show"
     )
-    pattern: str | None = Field(default=None, description="Regex pattern to include (e.g., 'error|exception')")
-    exclude_pattern: str | None = Field(default=None, description="Regex pattern to exclude (e.g., 'health.*check')")
+    pattern: str | None = Field(default=None, description="Regex pattern to include")
+    exclude_pattern: str | None = Field(default=None, description="Regex pattern to exclude")
     case_sensitive: bool = Field(default=False, description="Make pattern matching case sensitive")
     context_lines: int = Field(default=0, description="Number of context lines around matches")
 
@@ -27,7 +27,7 @@ class ContainerLogsInput(BaseModel):
 
     container: str = Field(description="Container name or ID")
     tail: int = Field(default=100, description="Number of lines to show from the end")
-    since: str | None = Field(default=None, description="Show logs since timestamp (e.g., '10m', '1h', '2024-01-01')")
+    since: str | None = Field(default=None, description="Show logs since (e.g., '10m', '1h')")
     follow: bool = Field(default=False, description="Follow log output (returns last chunk)")
     # Filter options
     min_level: Literal["trace", "debug", "info", "warn", "error", "fatal"] | None = Field(

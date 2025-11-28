@@ -1,11 +1,10 @@
 """Docker Compose tools for service management and logs."""
 
 import asyncio
-from pathlib import Path
 from typing import Any
 
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel, Field
 
 
@@ -14,23 +13,23 @@ class ComposeLogsInput(BaseModel):
 
     service: str | None = Field(default=None, description="Service name (omit for all services)")
     tail: int = Field(default=100, description="Number of lines to show from the end")
-    since: str | None = Field(default=None, description="Show logs since timestamp (e.g., '10m', '1h')")
-    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml directory")
+    since: str | None = Field(default=None, description="Show logs since (e.g., '10m', '1h')")
+    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml dir")
     follow: bool = Field(default=False, description="Follow log output")
 
 
 class ComposeServicesInput(BaseModel):
     """Input schema for listing compose services."""
 
-    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml directory")
+    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml dir")
     all: bool = Field(default=False, description="Show all services (including stopped)")
 
 
 class ComposeServiceActionInput(BaseModel):
     """Input schema for service actions."""
 
-    service: str | None = Field(default=None, description="Service name (omit for all services)")
-    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml directory")
+    service: str | None = Field(default=None, description="Service name (omit for all)")
+    project_dir: str | None = Field(default=None, description="Path to docker-compose.yml dir")
 
 
 def register_compose_tools(server: Server) -> None:

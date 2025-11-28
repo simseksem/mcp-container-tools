@@ -6,9 +6,9 @@ import logging
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 
-from mcp_server.tools import register_tools
-from mcp_server.resources import register_resources
 from mcp_server.prompts import register_prompts
+from mcp_server.resources import register_resources
+from mcp_server.tools import register_tools
 
 logger = logging.getLogger(__name__)
 

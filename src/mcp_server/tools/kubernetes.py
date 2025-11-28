@@ -4,7 +4,7 @@ import asyncio
 from typing import Any, Literal
 
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel, Field
 
 from mcp_server.utils.log_filter import filter_logs
@@ -21,11 +21,11 @@ class PodLogsInput(BaseModel):
     """Input schema for reading pod logs."""
 
     pod: str = Field(description="Pod name (supports wildcards like 'my-app-*')")
-    container: str | None = Field(default=None, description="Container name (for multi-container pods)")
+    container: str | None = Field(default=None, description="Container name (multi-container pods)")
     namespace: str = Field(default="default", description="Kubernetes namespace")
     context: str | None = Field(default=None, description="Kubernetes context")
     tail: int = Field(default=100, description="Number of lines to show from the end")
-    since: str | None = Field(default=None, description="Show logs since duration (e.g., '10m', '1h')")
+    since: str | None = Field(default=None, description="Show logs since (e.g., '10m', '1h')")
     previous: bool = Field(default=False, description="Show logs from previous container instance")
     # Filter options
     min_level: Literal["trace", "debug", "info", "warn", "error", "fatal"] | None = Field(
@@ -39,7 +39,7 @@ class PodLogsInput(BaseModel):
 class ListPodsInput(BaseModel):
     """Input schema for listing pods."""
 
-    namespace: str = Field(default="default", description="Kubernetes namespace (use 'all' for all namespaces)")
+    namespace: str = Field(default="default", description="K8s namespace ('all' for all)")
     context: str | None = Field(default=None, description="Kubernetes context")
     selector: str | None = Field(default=None, description="Label selector (e.g., 'app=nginx')")
 
@@ -57,7 +57,7 @@ class PodExecInput(BaseModel):
 
     pod: str = Field(description="Pod name")
     command: str = Field(description="Command to execute")
-    container: str | None = Field(default=None, description="Container name (for multi-container pods)")
+    container: str | None = Field(default=None, description="Container name (multi-container pods)")
     namespace: str = Field(default="default", description="Kubernetes namespace")
     context: str | None = Field(default=None, description="Kubernetes context")
 

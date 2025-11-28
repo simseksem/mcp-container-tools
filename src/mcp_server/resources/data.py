@@ -1,7 +1,7 @@
 """Data resources for exposing structured data."""
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from mcp.server import Server
 from mcp.types import Resource, TextContent
@@ -34,7 +34,7 @@ def _get_server_status() -> dict:
     """Get current server status information."""
     return {
         "status": "running",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "health": {
             "memory": "ok",
             "connections": "ok",

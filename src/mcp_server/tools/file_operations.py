@@ -1,11 +1,10 @@
 """File operation tools for reading and listing files."""
 
-import os
 from pathlib import Path
 from typing import Any
 
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel, Field
 
 

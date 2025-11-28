@@ -1,8 +1,8 @@
 """Log filtering utilities for processing container logs."""
 
 import re
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
 
 
 class LogLevel(str, Enum):
@@ -74,7 +74,6 @@ class LogFilter:
             if self._should_include(line):
                 # Add context lines before match
                 if self.options.context_lines > 0:
-                    start = max(0, len(filtered_lines) - self.options.context_lines)
                     for ctx_line in context_buffer[-self.options.context_lines :]:
                         if ctx_line not in filtered_lines:
                             filtered_lines.append(ctx_line)

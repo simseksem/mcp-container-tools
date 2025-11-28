@@ -3,7 +3,7 @@
 from typing import Any
 
 from mcp.server import Server
-from mcp.types import Tool, TextContent
+from mcp.types import TextContent, Tool
 from pydantic import BaseModel, Field
 
 
@@ -25,7 +25,7 @@ def register_calculator_tools(server: Server) -> None:
         return [
             Tool(
                 name="calculate",
-                description="Perform basic mathematical operations (add, subtract, multiply, divide)",
+                description="Perform basic math operations (add, subtract, multiply, divide)",
                 inputSchema=CalculateInput.model_json_schema(),
             )
         ]
