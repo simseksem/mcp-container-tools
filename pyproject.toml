@@ -3,7 +3,35 @@ name = "mcp-container-tools"
 version = "0.1.0"
 description = "MCP server for Docker, Kubernetes, and Azure Application Insights"
 readme = "README.md"
+license = {text = "MIT"}
 requires-python = ">=3.11"
+authors = [
+    {name = "simseksem"}
+]
+keywords = [
+    "mcp",
+    "docker",
+    "kubernetes",
+    "azure",
+    "application-insights",
+    "logging",
+    "devops",
+    "claude",
+    "anthropic",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Monitoring",
+]
 dependencies = [
     "mcp>=1.0.0",
     "pydantic>=2.0.0",
@@ -24,6 +52,11 @@ dev = [
 all = [
     "mcp-container-tools[azure,dev]",
 ]
+
+[project.urls]
+Homepage = "https://github.com/simseksem/mcp-container-tools"
+Repository = "https://github.com/simseksem/mcp-container-tools"
+Issues = "https://github.com/simseksem/mcp-container-tools/issues"
 
 [project.scripts]
 mcp-server = "mcp_server.server:main"

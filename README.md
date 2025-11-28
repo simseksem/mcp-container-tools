@@ -1,5 +1,6 @@
 # 🐳 MCP Container Tools
 
+[![PyPI version](https://img.shields.io/pypi/v/mcp-container-tools.svg)](https://pypi.org/project/mcp-container-tools/)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
@@ -26,41 +27,38 @@ A Model Context Protocol (MCP) server for Docker, Kubernetes, and Azure Applicat
 
 ## 🚀 Installation
 
-### 1️⃣ Clone the repository
+### 📦 Quick Install (recommended)
 
 ```bash
-git clone https://github.com/<your-username>/mcp-container-tools.git
-cd mcp-container-tools
-```
-
-### 2️⃣ Create virtual environment
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# or
-.venv\Scripts\activate  # Windows
-```
-
-### 3️⃣ Install the package
-
-```bash
-# Basic installation (Docker, K8s)
-pip install -e .
+# Basic installation
+pip install mcp-container-tools
 
 # With Azure Application Insights support
-pip install -e ".[azure]"
+pip install mcp-container-tools[azure]
+```
 
-# Full installation (all features + dev tools)
+### 🐙 Install from GitHub
+
+```bash
+# Latest version from GitHub
+pip install git+https://github.com/simseksem/mcp-container-tools.git
+
+# With Azure support
+pip install "mcp-container-tools[azure] @ git+https://github.com/simseksem/mcp-container-tools.git"
+```
+
+### 🔧 Install from source (for development)
+
+```bash
+git clone https://github.com/simseksem/mcp-container-tools.git
+cd mcp-container-tools
 pip install -e ".[all]"
 ```
 
-### 4️⃣ Verify installation
+### ✅ Verify installation
 
 ```bash
 mcp-server --help
-# or
-python -m mcp_server.server
 ```
 
 ## ⚙️ Configuration
